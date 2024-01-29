@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="assets/jquery-3.6.1.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div class="displayDiv">
+        <h1>Stats</h1>
+        <h2 id="pkmnCountDisplay">Pokemon: 1</h2>
+        <h2 id="yayDisplay">Yay: 0</h2>
+        <h2 id="nayDisplay">Nay: 0</h2>
+    </div>
+    <div class="outerContainer">
+        <div class="container">
+            <h1 id="nameDisp">Cool stuff</h1>
+            <div class="cube" id="cube">
+                <div class="face front nobgcolor" id="frontFace"><img src="https://upload.wikimedia.org/wikipedia/commons/5/59/Empty.png" id="frontFaceImg"></div>
+                <div class="face"><h1>Start!</h1></div>
+                <div class="face back nobgcolor" id="backFace"><img src="https://upload.wikimedia.org/wikipedia/commons/5/59/Empty.png" id="backFaceImg"></div>
+            </div>
+            <br>
+            <div>
+                <input type="button" class="buttons yay" value="Yay" onclick="yay()">
+                <input type="button" class="buttons nay" value="Nay" onclick="nay()">
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        let frontFaceImg = document.getElementById("frontFaceImg");
+        let backFaceImg = document.getElementById("backFaceImg");
+        let cube = document.getElementById("cube");
+        let yayDisplay = document.getElementById("yayDisplay");
+        let nayDisplay = document.getElementById("nayDisplay");
+        let pkmnCountDisplay = document.getElementById("pkmnCountDisplay");
+        let nameDisp = document.getElementById("nameDisp");
+        
+        function saveStats()
+        {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(outputStats)));
+            element.setAttribute('download', "stats.json");
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+        }
+        
+        /*--------------------*/
+        
+        let currentPokemon = 1;
+        let yayCount = 0;
+        let nayCount = 0;
+        let outputStats = {
+            "totalYays": 0,
+            "totalNays": 0,
+            "yayedMons": []
+        }
+        
+        let dex = [];
+        $.ajaxSetup({
+            async: false
+        });
+        $.getJSON("assets/pokedex.json", function(json) {
+                    
+            json.forEach(element => {
+                dex.push(element);
+            });
+        });
+        
+        $.ajaxSetup({
+            async: true
+        });
+        
+        setImages();
+
+        function setImages()
+        {
+            frontFaceImg.src = dex[currentPokemon - 1].image.hires;
+            if(currentPokemon < dex.length)
+            {
+                backFaceImg.src = dex[currentPokemon].image.hires;
+            }
+            
+            pkmnCountDisplay.innerHTML = "Pokemon: " + currentPokemon;
+            nameDisp.innerHTML = dex[currentPokemon - 1].name.english;
+            console.log(dex[currentPokemon - 1].name.english);
+        }
+
+        function yay()
+        {
+            if(currentPokemon >= dex.length)
+            {
+                return;
+            }
+            yayCount += 1;
+            yayDisplay.innerHTML = "Yay: " + yayCount;
+            nayDisplay.innerHTML = "Nay: " + nayCount;
+            outputStats.yayedMons.push(dex[currentPokemon - 1].name.english);
+            flipCard();
+        }   
+
+        function nay()
+        {
+            if(currentPokemon >= dex.length)
+            {
+                return;
+            }
+            nayCount += 1;
+            yayDisplay.innerHTML = "Yay: " + yayCount;
+            nayDisplay.innerHTML = "Nay: " + nayCount;
+            flipCard();
+        }
+
+
+        function flipCard()
+        {
+
+            let oldCube = document.getElementById("cube");
+            let newCube = oldCube.cloneNode(true);
+            
+            newCube.classList.remove("animated");
+            newCube.classList.add("animated");
+            
+            oldCube.parentNode.replaceChild(newCube, oldCube);
+
+            frontFaceImg = document.getElementById("frontFaceImg");
+            backFaceImg = document.getElementById("backFaceImg");
+            cube = document.getElementById("cube");
+            
+            
+            currentPokemon += 1;
+            cube.addEventListener("animationend", setImages);
+        }
+
+    </script>
+
+
+</body>
+</html>
